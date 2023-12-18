@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Autokeet Editor Konva</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jgthms/minireset.css@master/minireset.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <style>
+        html,
+        body {
+            font-family: "Poppins", Sans-serif;
+        }
+
+        body {
+            background-color: #f2f2f2;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #sidebar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 350px;
+            height: 100%;
+            background-color: #fff;
+            padding: 16px;
+            box-shadow: 7px 7px 21px #f2f2f2, -7px -7px 21px #ffffff;
+            z-index: 1;
+        }
+
+        #sidebar__row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            column-gap: 8px;
+            row-gap: 8px;
+        }
+
+        .sidebar__imagem {
+            width: 151px;
+            height: 151px;
+            background-size: cover;
+            background-position: center center;
+            cursor: pointer;
+        }
+
+        .button {
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #83F250;
+            color: #112E40;
+            border-radius: 10px;
+            padding: 12px 32px 12px 32px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            font-family: "Poppins", Sans-serif;
+            transition: ease-in-out .3s;
+        }
+
+        .button #ds_arquivo {
+            display: none;
+            z-index: -1;
+            width: 0;
+        }
+
+        .button:hover {
+            background-color: #112E40;
+            color: #83F250;
+        }
+    </style>
+</head>
+
+<body>
+    <aside id="sidebar">
+        <button class="button" onclick="upload(event)">
+            Fazer upload de arquivos
+            <input type="file" name="ds_arquivo" id="ds_arquivo" onchange="changeInput(event)" accept="image/*"
+                multiple>
+        </button>
+
+        <div id="sidebar__row">
+        </div>
+    </aside>
+    <div id="container"></div>
+
+    <script src="https://unpkg.com/konva@9.2.3/konva.min.js"></script>
+    <script>
+        const stage = new Konva.Stage({
+            container: 'container',
+            width: window.innerWidth,
+            height: window.innerHeight,
+            draggable: true,
+        });
+        let scale = 1;
+        let rect = null;
+        const rectWidth = 1080;
+        const rectHeight = 1920;
+        const margin = 20;
+        const screenWidth = 1920;
+        const screenHeight = 919;
+        const layer = new Konva.Layer();
+        rect = new Konva.Rect({
+            width: 1080,
+            height: 1920,
+            fill: '#fff',
+            name: 'object',
+        });
+        scale = Math.min(
+            (screenWidth - 2 * margin) / rectWidth,
+            (screenHeight - 2 * margin) / rectHeight
+        );
+        rect.scale({
+            x: scale,
+            y: scale
+        });
+        rect.position({
+            x: (screenWidth - rect.getClientRect().width) / 2,
+            y: 20,
+        });
+
+        layer.add(rect);
+        stage.add(layer);
+
+        const scaleBy = 1.5;
+        stage.on('wheel', (e) => {
+            e.evt.preventDefault();
+            const oldScale = stage.scaleX();
+            const pointer = stage.getPointerPosition();
+            const mousePointTo = {
+                x: (pointer.x - stage.x()) / oldScale,
+                y: (pointer.y - stage.y()) / oldScale,
+            };
+            let direction = e.evt.deltaY < 0 ? 1 : -1;
+            const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+            stage.scale({ x: newScale, y: newScale });
+            const newPos = {
+                x: pointer.x - mousePointTo.x * newScale,
+                y: pointer.y - mousePointTo.y * newScale,
+            };
+            stage.position(newPos);
+        });
+        function upload(event) {
+            const input = event.target.firstElementChild;
+            if (input) {
+                input.click();
+            }
+        }
+        function changeInput(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                Array.from(files).forEach(element => {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        createImage(this.result);
+                    };
+                    reader.readAsDataURL(element);
+                });
+            }
+        }
+        const container = document.getElementById('container');
+        container.addEventListener('dragover', function (event) {
+            event.preventDefault();
+        });
+        function getCrop(image, size, clipPosition = "center-middle") {
+            const width = size.width;
+            const height = size.height;
+            const aspectRatio = width / height;
+
+            let newWidth;
+            let newHeight;
+
+            const imageRatio = image.width / image.height;
+
+            if (aspectRatio >= imageRatio) {
+                newWidth = image.width;
+                newHeight = image.width / aspectRatio;
+            } else {
+                newWidth = image.height * aspectRatio;
+                newHeight = image.height;
+            }
+
+            let x = 0;
+            let y = 0;
+            if (clipPosition === "left-top") {
+                x = 0;
+                y = 0;
+            } else if (clipPosition === "left-middle") {
+                x = 0;
+                y = (image.height - newHeight) / 2;
+            } else if (clipPosition === "left-bottom") {
+                x = 0;
+                y = image.height - newHeight;
+            } else if (clipPosition === "center-top") {
+                x = (image.width - newWidth) / 2;
+                y = 0;
+            } else if (clipPosition === "center-middle") {
+                x = (image.width - newWidth) / 2;
+                y = (image.height - newHeight) / 2;
+            } else if (clipPosition === "center-bottom") {
+                x = (image.width - newWidth) / 2;
+                y = image.height - newHeight;
+            } else if (clipPosition === "right-top") {
+                x = image.width - newWidth;
+                y = 0;
+            } else if (clipPosition === "right-middle") {
+                x = image.width - newWidth;
+                y = (image.height - newHeight) / 2;
+            } else if (clipPosition === "right-bottom") {
+                x = image.width - newWidth;
+                y = image.height - newHeight;
+            } else if (clipPosition === "scale") {
+                x = 0;
+                y = 0;
+                newWidth = width;
+                newHeight = height;
+            } else {
+                console.error(
+                    new Error("Unknown clip position property - " + clipPosition)
+                );
+            }
+
+            return {
+                cropX: x,
+                cropY: y,
+                cropWidth: newWidth,
+                cropHeight: newHeight,
+            };
+        }
+        function applyCrop(pos) {
+            const img = layer.findOne(".object");
+            img.setAttr("lastCropUsed", pos);
+            const crop = getCrop(
+                img,
+                { width: img.width(), height: img.height() },
+                pos
+            );
+            img.setAttrs(crop);
+        }
+        container.addEventListener('drop', function (event) {
+            // const image = new Image();
+            // image.onload = function () {
+            Konva.Image.fromURL(
+                // 'golf-dianteira-crop.jpg',
+                event.dataTransfer.getData('url'),
+                (img) => {
+                    img.scale({
+                        x: scale,
+                        y: scale
+                    });
+                    img.setAttrs({
+                        x: (screenWidth - rect.getClientRect().width) / 2,
+                        y: 20,
+                        name: 'object',
+                        draggable: true,
+                    });
+                    layer.add(img);
+                    applyCrop('center-middle');
+                    const tr = new Konva.Transformer({
+                        nodes: [img],
+                        keepRatio: true,
+                        flipEnabled: false,
+                        boundBoxFunc: (oldBox, newBox) => {
+                            if (Math.abs(newBox.width) < 10 || Math.abs(newBox.height) < 10) {
+                                return oldBox;
+                            }
+                            return newBox;
+                        },
+                    });
+
+                    tr.on('transform', function (e) {
+                        alignmentGuide(e);
+                    });
+
+                    tr.on('transformed', function (e) {
+                        // Limpa todas as linhas anteriores na tela
+                        layer.find('.guid-line').forEach((l) => l.destroy());
+                    });
+
+                    layer.add(tr);
+
+                    img.on('transform', () => {
+                        // reset scale on transform
+                        img.setAttrs({
+                            scaleX: 1,
+                            scaleY: 1,
+                            width: img.width() * img.scaleX(),
+                            height: img.height() * img.scaleY(),
+                        });
+                        applyCrop(img.getAttr('lastCropUsed'));
+                    });
+                }
+            );
+            // const img = new Konva.Image({
+            //     draggable: true,
+            //     image: image,
+            //     name: 'image',
+            //     draggable: true,
+            // });
+            // img.on("transform", () => {
+            //     // reset scale on transform
+            //     img.setAttrs({
+            //         scaleX: 1,
+            //         scaleY: 1,
+            //         width: img.width() * img.scaleX(),
+            //         height: img.height() * img.scaleY(),
+            //     });
+            //     applyCrop(img.getAttr("lastCropUsed"));
+            // });
+            // const layer = new Konva.Layer();
+            // layer.add(img);
+            // const tr = new Konva.Transformer({
+            //     nodes: [img],
+            //     keepRatio: true,
+            //     flipEnabled: false,
+            //     boundBoxFunc: (oldBox, newBox) => {
+            //         if (Math.abs(newBox.width) < 10 || Math.abs(newBox.height) < 10) {
+            //             return oldBox;
+            //         }
+            //         return newBox;
+            //     },
+            // });
+
+            // layer.add(tr);
+            // stage.add(layer);
+            // };
+            // image.src = event.dataTransfer.getData('url');
+            event.preventDefault();
+        });
+        const row = document.getElementById('sidebar__row');
+        function createImage(url) {
+            const element = document.createElement('div');
+            element.classList.add('sidebar__imagem');
+            element.setAttribute("draggable", true);
+            element.style.backgroundImage = `url(${url})`;
+            element.addEventListener('drop', function (event) {
+                event.preventDefault();
+                console.log('drop', event);
+            });
+            element.addEventListener('dragstart', function (event) {
+                event.dataTransfer.setData('url', url);
+            });
+            row.appendChild(element);
+        }
+        var canvasWidth = 1920;
+        var canvasHeight = 919;
+        var GUIDELINE_OFFSET = 5;
+        // Função para obter linhas de guia de alinhamento
+        function getLineGuideStops(skipShape) {
+            var vertical = [0, canvasWidth / 2, canvasWidth];
+            var horizontal = [0, canvasHeight / 2, canvasHeight];
+
+            stage.find('.object').forEach((guideItem) => {
+                if (guideItem === skipShape) {
+                    return;
+                }
+                var box = guideItem.getClientRect();
+                vertical.push([box.x, box.x + box.width, box.x + box.width / 2]);
+                horizontal.push([box.y, box.y + box.height, box.y + box.height / 2]);
+            });
+
+            return {
+                vertical: vertical.flat(),
+                horizontal: horizontal.flat(),
+            };
+        }
+
+        // Função para obter pontos de alinhamento de um objeto
+        function getObjectSnappingEdges(node) {
+            var box = node.getClientRect();
+            var absPos = node.absolutePosition();
+
+            return {
+                vertical: [
+                    { guide: Math.round(box.x), offset: Math.round(absPos.x - box.x), snap: 'start' },
+                    { guide: Math.round(box.x + box.width / 2), offset: Math.round(absPos.x - box.x - box.width / 2), snap: 'center' },
+                    { guide: Math.round(box.x + box.width), offset: Math.round(absPos.x - box.x - box.width), snap: 'end' },
+                ],
+                horizontal: [
+                    { guide: Math.round(box.y), offset: Math.round(absPos.y - box.y), snap: 'start' },
+                    { guide: Math.round(box.y + box.height / 2), offset: Math.round(absPos.y - box.y - box.height / 2), snap: 'center' },
+                    { guide: Math.round(box.y + box.height), offset: Math.round(absPos.y - box.y - box.height), snap: 'end' },
+                ],
+            };
+        }
+
+        // Função para encontrar todas as possibilidades de alinhamento
+        function getGuides(lineGuideStops, itemBounds) {
+            var resultV = [];
+            var resultH = [];
+
+            lineGuideStops.vertical.forEach((lineGuide) => {
+                itemBounds.vertical.forEach((itemBound) => {
+                    var diff = Math.abs(lineGuide - itemBound.guide);
+                    if (diff < GUIDELINE_OFFSET) {
+                        resultV.push({ lineGuide: lineGuide, diff: diff, snap: itemBound.snap, offset: itemBound.offset });
+                    }
+                });
+            });
+
+            lineGuideStops.horizontal.forEach((lineGuide) => {
+                itemBounds.horizontal.forEach((itemBound) => {
+                    var diff = Math.abs(lineGuide - itemBound.guide);
+                    if (diff < GUIDELINE_OFFSET) {
+                        resultH.push({ lineGuide: lineGuide, diff: diff, snap: itemBound.snap, offset: itemBound.offset });
+                    }
+                });
+            });
+
+            var guides = [];
+
+            var minV = resultV.sort((a, b) => a.diff - b.diff)[0];
+            var minH = resultH.sort((a, b) => a.diff - b.diff)[0];
+            if (minV) {
+                guides.push({ lineGuide: minV.lineGuide, offset: minV.offset, orientation: 'V', snap: minV.snap });
+            }
+            if (minH) {
+                guides.push({ lineGuide: minH.lineGuide, offset: minH.offset, orientation: 'H', snap: minH.snap });
+            }
+            return guides;
+        }
+
+        // Função para desenhar linhas de guia
+        function drawGuides(guides) {
+            guides.forEach((lg) => {
+                if (lg.orientation === 'H') {
+                    var line = new Konva.Line({
+                        points: [-6000, 0, 6000, 0],
+                        stroke: 'rgb(0, 161, 255)',
+                        strokeWidth: 1,
+                        name: 'guid-line',
+                        dash: [4, 6],
+                    });
+                    layer.add(line);
+                    line.absolutePosition({
+                        x: 0,
+                        y: lg.lineGuide,
+                    });
+                } else if (lg.orientation === 'V') {
+                    var line = new Konva.Line({
+                        points: [0, -6000, 0, 6000],
+                        stroke: 'rgb(0, 161, 255)',
+                        strokeWidth: 1,
+                        name: 'guid-line',
+                        dash: [4, 6],
+                    });
+                    layer.add(line);
+                    line.absolutePosition({
+                        x: lg.lineGuide,
+                        y: 0,
+                    });
+                }
+            });
+        }
+
+        function alignmentGuide(e) {
+            // Limpa todas as linhas anteriores na tela
+            layer.find('.guid-line').forEach((l) => l.destroy());
+
+            // Encontra possíveis linhas de alinhamento
+            var lineGuideStops = getLineGuideStops(e.target);
+            // Encontra pontos de alinhamento do objeto atual
+            var itemBounds = getObjectSnappingEdges(e.target);
+
+            // Encontra onde podemos alinhar o objeto atual
+            var guides = getGuides(lineGuideStops, itemBounds);
+
+            // Não faz nada se não houver alinhamento
+            if (!guides.length) {
+                return;
+            }
+
+            drawGuides(guides);
+
+            var absPos = e.target.absolutePosition();
+            // Agora força a posição do objeto
+            guides.forEach((lg) => {
+                switch (lg.snap) {
+                    case 'start': {
+                        switch (lg.orientation) {
+                            case 'V': {
+                                absPos.x = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                            case 'H': {
+                                absPos.y = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    case 'center': {
+                        switch (lg.orientation) {
+                            case 'V': {
+                                absPos.x = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                            case 'H': {
+                                absPos.y = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    case 'end': {
+                        switch (lg.orientation) {
+                            case 'V': {
+                                absPos.x = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                            case 'H': {
+                                absPos.y = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+            e.target.absolutePosition(absPos);
+        }
+
+
+
+        layer.on('dragmove', function (e) {
+            alignmentGuide(e);
+        });
+
+        layer.on('dragend', function (e) {
+            // Limpa todas as linhas anteriores na tela
+            layer.find('.guid-line').forEach((l) => l.destroy());
+        });
+    </script>
+</body>
+
+</html>

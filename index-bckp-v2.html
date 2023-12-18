@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- Remova a linha abaixo -->
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/interactjs@1.10.26/dist/interact.min.css"> -->
+    
+    <!-- Troque a linha abaixo -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.26/dist/interact.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.26/dist/interact.min.js"></script>
+
+    <style>
+        html, body {
+            background-color: #f2f2f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #container {
+            position: relative;
+            width: 1080px;
+            height: 1920px;
+            background-color: #fff;
+        }
+
+        .image-selector {
+            border: 1px solid #000;
+            height: calc(1920px / 3);
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-selector:first-child {
+            border-bottom: none;
+        }
+
+        .image-selector:last-child {
+            border-top: none;
+        }
+
+        .image-input-file {
+            visibility: hidden;
+            z-index: -1;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: move; /* Adicionado cursor: move; para indicar que é arrastável */
+            display: none; /* Inicialmente, esconde as imagens */
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="image-selector" id="image1">
+            <input
+                type="file"
+                name="imageInputFile1"
+                class="image-input-file"
+                id="imageInputFile1"
+                accept="image/*"
+            >
+            <img
+                class="image-preview"
+                id="imagePreview1"
+                alt="Preview 1"
+            >
+        </div>
+        <div class="image-selector" id="image2">
+            <input
+                type="file"
+                name="imageInputFile2"
+                class="image-input-file"
+                id="imageInputFile2"
+                accept="image/*"
+            >
+            <img
+                class="image-preview"
+                id="imagePreview2"
+                alt="Preview 2"
+            >
+        </div>
+        <div class="image-selector" id="image3">
+            <input
+                type="file"
+                name="imageInputFile3"
+                class="image-input-file"
+                id="imageInputFile3"
+                accept="image/*"
+            >
+            <img
+                class="image-preview"
+                id="imagePreview3"
+                alt="Preview 3"
+            >
+        </div>
+    </div>
+
+    <script>
+        const arrImageSelectors = document.querySelectorAll('.image-selector');
+        arrImageSelectors.forEach(element => {
+            element.addEventListener('click', function (event) {
+                const imageInputFile = event.target.querySelector('.image-input-file');
+                if (imageInputFile) {
+                    imageInputFile.click();
+                }
+            });
+        })
+
+        function activateInteract(index) {
+            interact(arrImageSelectors[index].querySelector('.image-preview'))
+                .draggable({
+                    onmove: function (event) {
+                        const target = event.target;
+                        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                        target.style.transform = `translate(${x}px, ${y}px)`;
+
+                        target.setAttribute('data-x', x);
+                        target.setAttribute('data-y', y);
+                    }
+                });
+        }
+
+        const arrImageInputFiles = document.getElementsByClassName('image-input-file');
+        Array.from(arrImageInputFiles).forEach((element, index) => {
+            element.addEventListener('change', function (event) {
+                const files = event.target.files;
+                const preview = event.target.nextElementSibling;
+
+                if (files.length > 0) {
+                    const firstFile = files[0];
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        preview.src = this.result;
+                        preview.style.display = 'block'; // Exibe a imagem após o upload
+                        activateInteract(index); // Ativa o draggable para a imagem correspondente
+                    };
+                    reader.readAsDataURL(firstFile);
+                } else {
+                    preview.src = '';
+                    preview.style.display = 'none'; // Esconde a imagem quando não há src
+                }
+            });
+        });
+    </script>
+</body>
+</html>

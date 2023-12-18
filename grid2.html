@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG - Zoom com Imagem de Fundo</title>
+</head>
+<body>
+  <label for="zoom">Zoom:</label>
+  <input type="number" id="zoom" value="1">
+  <label for="positionX">Posição X:</label>
+  <input type="number" id="positionX" value="0">
+  <label for="positionY">Posição Y:</label>
+  <input type="number" id="positionY" value="0">
+  <svg id="svgCanvas" width="1080" height="1920" style="border: 1px solid #000;">
+    <image id="backgroundImage" xlink:href="" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"/>
+  </svg>
+
+  <script>
+    var zoomInput = document.getElementById('zoom');
+    var positionXInput = document.getElementById('positionX');
+    var positionYInput = document.getElementById('positionY');
+    var backgroundImage = document.getElementById('backgroundImage');
+
+    // Adiciona eventos de input para atualizar o zoom e a posição em tempo real
+    zoomInput.addEventListener('input', updateImageZoom);
+    positionXInput.addEventListener('input', updateImagePosition);
+    positionYInput.addEventListener('input', updateImagePosition);
+
+    function updateImageZoom() {
+      var zoom = parseFloat(zoomInput.value);
+      backgroundImage.setAttribute('transform', 'scale(' + zoom + ') translate(' + positionXInput.value + ',' + positionYInput.value + ')');
+    }
+
+    function updateImagePosition() {
+      var zoom = parseFloat(zoomInput.value);
+      backgroundImage.setAttribute('transform', 'scale(' + zoom + ') translate(' + positionXInput.value + ',' + positionYInput.value + ')');
+    }
+
+    // Altere o valor do atributo 'xlink:href' com o caminho da sua imagem
+    backgroundImage.setAttribute('xlink:href', 'golf-dianteira-crop.jpg');
+
+    // Inicializa o zoom
+    updateImageZoom();
+  </script>
+</body>
+</html>

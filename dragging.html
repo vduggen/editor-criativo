@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #movableDiv {
+            width: 300px;
+            height: 200px;
+            border: 1px solid #ccc;
+            overflow: hidden;
+            position: absolute;
+            user-select: none; /* Impede a seleção de texto ao arrastar */
+            cursor: grab; /* Cursor de "agarre" para indicar que a div pode ser arrastada */
+        }
+    </style>
+</head>
+<body>
+    <div id="movableDiv">
+        <p>Conteúdo da Div</p>
+    </div>
+
+    <script>
+        var movableDiv = document.getElementById('movableDiv');
+        var isDragging = false;
+        var startX, startY, offsetX, offsetY;
+
+        // Adiciona um manipulador de eventos para iniciar o arrasto
+        movableDiv.addEventListener('mousedown', function (e) {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            offsetX = movableDiv.offsetLeft;
+            offsetY = movableDiv.offsetTop;
+
+            // Altera o cursor para "agarre"
+            movableDiv.style.cursor = 'grabbing';
+        });
+
+        // Adiciona um manipulador de eventos para continuar o arrasto
+        document.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+
+            var deltaX = e.clientX - startX;
+            var deltaY = e.clientY - startY;
+
+            movableDiv.style.left = offsetX + deltaX + 'px';
+            movableDiv.style.top = offsetY + deltaY + 'px';
+        });
+
+        // Adiciona um manipulador de eventos para finalizar o arrasto
+        document.addEventListener('mouseup', function () {
+            isDragging = false;
+
+            // Restaura o cursor para "agarre"
+            movableDiv.style.cursor = 'grab';
+        });
+
+        // Adiciona manipuladores de eventos de toque para dispositivos móveis
+        movableDiv.addEventListener('touchstart', function (e) {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            offsetX = movableDiv.offsetLeft;
+            offsetY = movableDiv.offsetTop;
+        });
+
+        movableDiv.addEventListener('touchmove', function (e) {
+            if (!isDragging) return;
+
+            var deltaX = e.touches[0].clientX - startX;
+            var deltaY = e.touches[0].clientY - startY;
+
+            movableDiv.style.left = offsetX + deltaX + 'px';
+            movableDiv.style.top = offsetY + deltaY + 'px';
+
+            e.preventDefault(); // Evita que a página role junto com o movimento do dedo
+        });
+
+        movableDiv.addEventListener('touchend', function () {
+            isDragging = false;
+        });
+    </script>
+</body>
+</html>

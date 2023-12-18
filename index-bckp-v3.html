@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jgthms/minireset.css@master/minireset.min.css">
+
+    <style>
+        img {
+            display: hidden;
+        }
+
+        html,
+        body {
+            background-color: #f2f2f2;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        body {
+            padding: 24px 0;
+        }
+
+        header {
+            margin-bottom: 3px;
+            display: flex;
+            column-gap: 16px;
+        }
+
+        .preview {
+            text-align: center;
+            position: relative;
+        }
+
+        .preview__upload {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .preview__upload--empty {
+            fill: #a7a7a7;
+            border: 2px dashed #a7a7a7;
+        }
+
+        .preview__upload--empty:hover {
+            border-color: #112E40;
+            fill: #112E40;
+            transition: ease-in-out .3s;
+        }
+
+        .preview__upload--image {
+            background-position: center;
+            background-size: cover;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview__upload--image:hover::before,
+        .preview__upload--image:hover .preview__actions {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .preview__upload--image::before {
+            content: '';
+            opacity: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-color: #1f1f1f94;
+            transition: ease-in-out .3s;
+        }
+
+        .preview__upload--image .preview__icon {
+            display: hidden;
+            width: 0;
+        }
+
+        .preview__actions {
+            z-index: 2;
+            display: flex;
+            column-gap: 12px;
+            opacity: 0;
+            z-index: -1;
+            transition: ease-in-out .3s;
+        }
+
+        .preview__upload--empty .preview__actions {
+            display: none;
+        }
+
+        .preview__action {
+            width: 48px;
+            height: 48px;
+            fill: white;
+            z-index: 2;
+            border: 1px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: ease-in-out .3s;
+        }
+
+        .preview__action:hover {
+            background-color: #112E40;
+            border-color: #112E40;
+            fill: #83F250;
+        }
+
+        .preview__action svg {
+            width: 24px;
+        }
+
+        .preview__icon {
+            width: 32px;
+        }
+
+        .preview__text {
+            margin-bottom: 8px;
+        }
+
+        .preview__input {
+            z-index: -1;
+            visibility: hidden;
+            position: absolute;
+            width: 0;
+        }
+
+        #criativo {
+            width: 100%;
+            height: calc(100% - 24px - 176px);
+            display: flex;
+            justify-content: center;
+        }
+
+        #actions {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div>
+            <label for="alturaInput">Altura</label>
+            <input type="number" disabled id="alturaInput" placeholder="altura">
+            <label for="alturaInput">Largura</label>
+            <input type="number" disabled id="larguraInput" placeholder="largura">
+        </div>
+        <div class="preview">
+            <h5 class="preview__text">Preview Imagem 1</h5>
+            <div class="preview__upload preview__upload--empty" data-number="1">
+                <svg class="preview__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>tray-arrow-up</title>
+                    <path
+                        d="M2 12H4V17H20V12H22V17C22 18.11 21.11 19 20 19H4C2.9 19 2 18.11 2 17V12M12 2L6.46 7.46L7.88 8.88L11 5.75V15H13V5.75L16.13 8.88L17.55 7.45L12 2Z" />
+                </svg>
+                <input type="file" name="inputPreview1" class="preview__input" id="inputPreview1">
+                <div class="preview__actions">
+                    <div class="preview__action">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
+                        </svg>
+                    </div>
+                    <div class="preview__action" onclick="removeImage(event, 1)">
+                        <svg onclick="removeImageChild(event)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="preview">
+            <h5 class="preview__text">Preview Imagem 2</h5>
+            <div class="preview__upload preview__upload--empty" data-number="2">
+                <svg class="preview__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>tray-arrow-up</title>
+                    <path
+                        d="M2 12H4V17H20V12H22V17C22 18.11 21.11 19 20 19H4C2.9 19 2 18.11 2 17V12M12 2L6.46 7.46L7.88 8.88L11 5.75V15H13V5.75L16.13 8.88L17.55 7.45L12 2Z" />
+                </svg>
+                <input type="file" name="inputPreview2" class="preview__input" id="inputPreview2">
+                <div class="preview__actions">
+                    <div class="preview__action">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
+                        </svg>
+                    </div>
+                    <div class="preview__action" onclick="removeImage(event, 2)">
+                        <svg onclick="removeImageChild(event)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="preview">
+            <h5 class="preview__text">Preview Imagem 3</h5>
+            <div class="preview__upload preview__upload--empty" data-number="3">
+                <svg class="preview__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>tray-arrow-up</title>
+                    <path
+                        d="M2 12H4V17H20V12H22V17C22 18.11 21.11 19 20 19H4C2.9 19 2 18.11 2 17V12M12 2L6.46 7.46L7.88 8.88L11 5.75V15H13V5.75L16.13 8.88L17.55 7.45L12 2Z" />
+                </svg>
+                <input type="file" name="inputPreview3" class="preview__input" id="inputPreview3">
+                <div class="preview__actions">
+                    <div class="preview__action">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
+                        </svg>
+                    </div>
+                    <div class="preview__action" onclick="removeImage(event, 3)">
+                        <svg onclick="removeImageChild(event)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path
+                                d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="actions">
+        <div id="zoom">
+            <h5 id="zoom__text">
+                Zoom:
+                <span>0%</span>
+            </h5>
+        </div>
+        <button id="undo">Desfazer</button>
+        <button id="redo">Próximo</button>
+        <button onclick="baixar()">Baixar</button>
+    </div>
+
+    <div id="criativo">
+        <canvas id="c"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
+    <script src="undo-redo.js"></script>
+    <script>
+        let rect = null;
+        let canvas = new fabric.Canvas('c', {
+            backgroundColor: '#f2f2f2'
+        });
+        const alturaInput = document.getElementById('alturaInput');
+        alturaInput.addEventListener('blur', function (event) {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                var scale = +event.target.value / activeObject.width;
+                activeObject.scaleX = scale;
+                activeObject.scaleY = scale;
+                activeObject.width = +event.target.value;
+                canvas.renderAll();
+            } else {
+                alturaInput.disabled = true;
+            }
+        });
+        alturaInput.addEventListener('keypress', function (event) {
+            event.stopPropagation();
+        });
+        alturaInput.addEventListener('keydown', function (event) {
+            event.stopPropagation();
+        });
+        const larguraInput = document.getElementById('larguraInput');
+        larguraInput.addEventListener('blur', function (event) {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                canvas.renderAll();
+            } else {
+                larguraInput.disabled = true;
+            }
+        });
+        larguraInput.addEventListener('keypress', function (event) {
+            event.stopPropagation();
+        });
+        larguraInput.addEventListener('keydown', function (event) {
+            event.stopPropagation();
+        });
+        canvas.on('selection:created', function (event) {
+            console.log(event);
+            const { selected } = event;
+            const [first] = selected;
+            larguraInput.value = first.width;
+            alturaInput.value = first.height;
+            alturaInput.disabled = false;
+            larguraInput.disabled = false;
+        })
+        fabric.Object.prototype.set({
+            cornerColor: '#fff',
+            cornerStrokeColor: '#83F250',
+            borderColor: '#83F250',
+            cornerSize: 8,
+            transparentCorners: false,
+        });
+        canvas.selectionBorderColor = '#83F250';
+        canvas.selectionColor = 'rgba(131, 242, 80, 0.1)';
+        let images = [];
+        window._canvas = canvas;
+        canvas.setDimensions({ width: 1920, height: 671 });
+        function addImage(url, top, number) {
+            new fabric.Image.fromURL(url, function (oImg) {
+                oImg.set({ top, left: 1920 / 2 - 540 });
+                oImg.scaleToWidth(rect.width);
+                canvas.add(oImg);
+                images[number] = oImg;
+            });
+        }
+        const arrElementsPreviewUpload = document.getElementsByClassName('preview__upload');
+        Array.from(arrElementsPreviewUpload).forEach(element => element.addEventListener('click', upload));
+        const arrElementsPreviewInput = document.getElementsByClassName('preview__input');
+        Array.from(arrElementsPreviewInput).forEach(element => element.addEventListener('change', getFile));
+        function upload(event) {
+            const element = event.target.querySelector('.preview__input');
+            if (element) {
+                element.click();
+            }
+        }
+        function getFile(event) {
+            const { target } = event;
+            const files = target.files;
+            if (files.length > 0) {
+                const firstFile = files[0];
+                const reader = new FileReader();
+                reader.onload = function () {
+                    let top = 0;
+                    const number = +target.parentElement.dataset.number;
+                    if (number == 2) {
+                        top = 640;
+                    }
+                    if (number == 3) {
+                        top = 1280;
+                    }
+                    addImage(this.result, top, number);
+                    target.parentElement.classList.remove('preview__upload--empty');
+                    target.parentElement.classList.add('preview__upload--image');
+                    target.parentElement.style.backgroundImage = `url(${this.result})`;
+                }
+                reader.readAsDataURL(firstFile);
+            }
+        }
+        function removeImage(event, nr_preview) {
+            const elementId = `inputPreview${nr_preview}`;
+            const element = document.getElementById(elementId);
+            element.value = "";
+            const elementRoot = document.querySelector(`[data-number="${nr_preview}"]`)
+            elementRoot.classList.add('preview__upload--empty');
+            elementRoot.classList.remove('preview__upload--image');
+            elementRoot.style.backgroundImage = "";
+            canvas.remove(images[nr_preview]);
+            images.splice(nr_preview, 1);
+        }
+        function removeImageChild(event) {
+            event.preventDefault();
+        }
+        const zoomText = document.querySelector('#zoom__text span');
+        canvas.on('mouse:wheel', function (opt) {
+            let delta = opt.e.deltaY;
+            let zoom = canvas.getZoom();
+            zoom *= 0.999 ** delta;
+            if (zoom > 20) zoom = 20;
+            if (zoom < 0.01) zoom = 0.01;
+            canvas.setZoom(zoom);
+            changeZoom(zoom);
+            opt.e.preventDefault();
+            opt.e.stopPropagation();
+        })
+        canvas.on('mouse:down', function (opt) {
+            let evt = opt.e;
+            if (evt.altKey === true) {
+                this.isDragging = true;
+                this.selection = false;
+                this.lastPosX = evt.clientX;
+                this.lastPosY = evt.clientY;
+            }
+        });
+        canvas.on('mouse:move', function (opt) {
+            if (this.isDragging) {
+                let e = opt.e;
+                let vpt = this.viewportTransform;
+                vpt[4] += e.clientX - this.lastPosX;
+                vpt[5] += e.clientY - this.lastPosY;
+                this.requestRenderAll();
+                this.lastPosX = e.clientX;
+                this.lastPosY = e.clientY;
+            }
+        });
+        canvas.on('mouse:up', function (opt) {
+            this.setViewportTransform(this.viewportTransform);
+            this.isDragging = false;
+            this.selection = true;
+        });
+        function getPorcentagemZoom() {
+            const fatorDeEscala = canvas.getZoom();
+            const porcentagem = (fatorDeEscala - 1) * 100;
+            return porcentagem.toFixed(2);
+        }
+        function changeZoom(fatorDeEscala) {
+            const porcentagemZoom = getPorcentagemZoom();
+            zoomText.innerText = `${porcentagemZoom}%`;
+        }
+        function setTemplate() {
+            const rectangle = new fabric.Rect({
+                width: 1080,
+                height: 1920,
+                fill: '#fff',
+                left: 1920 / 2 - 540
+            });
+            const line = new fabric.Line([0, 0, 1080, 0], {
+                stroke: 'rgb(0 0 0 / 100%)',
+                strokeWidth: 2,
+                left: 1920 / 2 - 540,
+                top: 640
+            });
+            const line2 = new fabric.Line([0, 0, 1080, 0], {
+                stroke: 'rgb(0 0 0 / 100%)',
+                strokeWidth: 2,
+                left: 1920 / 2 - 540,
+                top: 640 * 2
+            });
+            canvas.add(new fabric.Group([rectangle, line, line2]));
+            rect = rectangle;
+            startUndoRedo();
+        }
+        setTemplate();
+        function baixar() {
+            const group = new fabric.Group([rect, images[1], images[2], images[3]], {
+                width: 1080,
+                height: 1920,
+                left: 0,
+                top: 0,
+            });
+            const dataURL = group.toDataURL({
+                format: 'jpeg',
+            });
+            function downloadImageFromBase64(base64String, fileName) {
+                const blob = new Blob([base64String], { type: 'image/jpeg' });
+                const link = document.createElement('a');
+                link.download = fileName || 'image.jpg';
+                link.href = base64String;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            const fileName = "criativo.jpeg";
+            downloadImageFromBase64(dataURL, fileName);
+        }
+    </script>
+    <script src="move-keyboard.js"></script>
+    <script src="guia-alinhamento.js"></script>
+</body>
+
+</html>

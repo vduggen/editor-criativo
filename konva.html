@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Autokeet Editor Konva</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jgthms/minireset.css@master/minireset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <style>
+        html,
+        body {
+            font-family: "Poppins", Sans-serif;
+        }
+
+        body {
+            background-color: #f2f2f2;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #sidebar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 350px;
+            height: 100%;
+            background-color: #fff;
+            padding: 16px;
+            box-shadow: 7px 7px 21px #f2f2f2, -7px -7px 21px #ffffff;
+            z-index: 1;
+        }
+
+        #sidebar__row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            column-gap: 8px;
+            row-gap: 8px;
+        }
+
+        .sidebar__actions {
+            display: hidden;
+            width: 0;
+            height: 0;
+            z-index: -1;
+            position: absolute;
+            background-color: #00000070;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar__imagem:hover .sidebar__actions {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .sidebar__edit {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid white;
+            border-radius: 50%;
+        }
+
+        .sidebar__edit:hover svg {
+            fill: #83F250;
+        }
+
+        .sidebar__edit:hover {
+            background-color: #112E40;
+            border-color: #112E40;
+        }
+
+        .sidebar__actions svg {
+            width: 18px;
+            fill: white;
+            height: 18px;
+        }
+
+        .sidebar__imagem {
+            width: 151px;
+            height: 151px;
+            background-size: cover;
+            background-position: center center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .button {
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #83F250;
+            color: #112E40;
+            border-radius: 10px;
+            padding: 12px 32px 12px 32px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            font-family: "Poppins", Sans-serif;
+            transition: ease-in-out .3s;
+        }
+
+        .button #ds_arquivo {
+            display: none;
+            z-index: -1;
+            width: 0;
+        }
+
+        .button:hover {
+            background-color: #112E40;
+            color: #83F250;
+        }
+
+        #modal__overlay {
+            width: 100vw;
+            height: 100vh;
+            background-color: #00000070;
+            position: absolute;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modal__overlay.modal__overlay--hidden {
+            display: none;
+            width: 0;
+            height: 0;
+            position: unset;
+        }
+
+        #modal {
+            z-index: 999;
+            height: 75%;
+            background-color: #fff;
+            padding: 16px;
+            overflow: auto;
+            border-radius: 16px;
+        }
+
+        #modal__container {
+            display: flex;
+            align-items: center;
+        }
+
+        #modal__close {
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid black;
+            border-radius: 50%;
+        }
+
+        #modal__close:hover {
+            border-color: #83F250;
+            background-color: #83F250;
+        }
+
+        #modal__close:hover svg {
+            fill: #112E40;
+        }
+
+        #modal__close svg {
+            width: 20px;
+            height: 20px;
+            fill: black;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .sidebar__action {
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+        }
+
+        .sidebar__action--disabled {
+            opacity: .3;
+            cursor: no-drop;
+        }
+
+        #download {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            z-index: 999;
+            transition: ease-in-out .3s;
+        }
+
+        #download:hover {
+            fill: #83F250;
+        }
+    </style>
+</head>
+
+<body>
+    <svg onclick="download()" id="download" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>tray-arrow-down</title>
+        <path
+            d="M2 12H4V17H20V12H22V17C22 18.11 21.11 19 20 19H4C2.9 19 2 18.11 2 17V12M12 15L17.55 9.54L16.13 8.13L13 11.25V2H11V11.25L7.88 8.13L6.46 9.55L12 15Z" />
+    </svg>
+    <aside id="sidebar">
+        <!-- <svg onclick="undo()" id="sidebarActionUndo" class="sidebar__action sidebar__action--disabled"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <title>arrow-u-left-top</title>
+            <path
+                d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
+        </svg>
+        <svg onclick="redo()" id="sidebarActionRedo" class="sidebar__action sidebar__action--disabled"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <title>arrow-u-right-top</title>
+            <path
+                d="M10.5 18H18V20H10.5C6.91 20 4 17.09 4 13.5S6.91 7 10.5 7H16.17L13.08 3.91L14.5 2.5L20 8L14.5 13.5L13.09 12.09L16.17 9H10.5C8 9 6 11 6 13.5S8 18 10.5 18Z" />
+        </svg> -->
+        <button class="button" onclick="upload(event)">
+            Fazer upload de arquivos
+            <input type="file" name="ds_arquivo" id="ds_arquivo" onchange="changeInput(event)" accept="image/*"
+                multiple>
+        </button>
+
+        <div id="sidebar__row">
+        </div>
+    </aside>
+    <div id="modal__overlay" class="modal__overlay--hidden">
+        <div id="modal">
+            <div id="modal__close" onclick="closeModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <title>close</title>
+                    <path
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                </svg>
+            </div>
+
+            <h4 id="modal__width">Largura: <span>0</span></h4>
+            <h4 id="modal__height">Altura: <span>0</span></h4>
+            <div id="modal__container">
+                <img id="modal__image" src="" alt="Image to crop">
+            </div>
+            <button class="button mt-4" onclick="getImage()">Salvar</button>
+        </div>
+    </div>
+    <div id="container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="https://unpkg.com/konva@9.2.3/konva.min.js"></script>
+    <script>
+        const stage = new Konva.Stage({
+            container: 'container',
+            width: window.innerWidth,
+            height: window.innerHeight,
+            draggable: true,
+        });
+        const sidebarActionRedo = document.getElementById('sidebarActionRedo');
+        const sidebarActionUndo = document.getElementById('sidebarActionUndo');
+        let index = 0;
+        let history = [];
+        const classnameDisabled = 'sidebar__action--disabled';
+        function changeDisable(element, isDisabled) {
+            if (isDisabled === true) {
+                element.classList.add(classnameDisabled);
+            } else {
+                element.classList.remove(classnameDisabled);
+            }
+        }
+        // voltar
+        function undo() {
+            if (index > 0) {
+                index--;
+                const { target, pos } = history.at(index);
+                target.position({
+                    x: pos.x,
+                    y: pos.y
+                });
+            }
+            changeDisable(sidebarActionUndo, index <= 0);
+            if (index === 0) {
+                changeDisable(sidebarActionRedo, false);
+            }
+        }
+        // avançar
+        function redo() {
+            if (index < history.length - 1) {
+                index++;
+                let type = history.at(index).type;
+                while (type === "UNDO") {
+                    index++;
+                }
+                const { target, pos } = history.at(index);
+                target.position({
+                    x: pos.x,
+                    y: pos.y
+                });
+            }
+            changeDisable(sidebarActionRedo, index >= history.length - 1);
+            if (index >= history.length - 1) {
+                changeDisable(sidebarActionUndo, false);
+            }
+        }
+        // stage.on('dragstart', (event) => {
+        //     // history = [];
+        //     history.push({
+        //         target: event.target,
+        //         pos: {
+        //             x: event.target.x(),
+        //             y: event.target.y(),
+        //         },
+        //         type: "UNDO"
+        //     });
+        //     index++;
+        //     changeDisable(sidebarActionUndo, false);
+        // });
+        // stage.on('dragend', (event) => {
+        //     history.push({
+        //         target: event.target,
+        //         pos: {
+        //             x: event.target.x(),
+        //             y: event.target.y(),
+        //         },
+        //         type: "REDO"
+        //     });
+        // });
+        let target = null;
+        let transformer = null;
+        stage.on('click tap', (e) => {
+            if (transformer) {
+                transformer.destroy();
+            }
+            if (e.target === stage || e.target.isCroppingElement) {
+                layer.draw();
+                target = null;
+                return;
+            }
+            target = e.target;
+            transformer = new Konva.Transformer();
+            transformer.on('transform', function (e) {
+                alignmentGuide(e);
+            });
+            transformer.on('transformend', function () {
+                layer.find('.guid-line').forEach((l) => l.destroy());
+            });
+            layer.add(transformer);
+            transformer.attachTo(e.target);
+            layer.draw();
+        })
+        let scale = 1;
+        let rect = null;
+        const rectWidth = 1080;
+        const rectHeight = 1920;
+        const margin = 20;
+        const screenWidth = 1920;
+        const screenHeight = 919;
+        const layer = new Konva.Layer();
+        rect = new Konva.Rect({
+            width: 1080,
+            height: 1920,
+            fill: '#fff',
+            name: 'image',
+        });
+        scale = Math.min(
+            (screenWidth - 2 * margin) / rectWidth,
+            (screenHeight - 2 * margin) / rectHeight
+        );
+        // rect.scale({
+        //     x: scale,
+        //     y: scale
+        // });
+        // rect.position({
+        // x: (screenWidth - rect.getClientRect().width) / 2,
+        //     y: 20,
+        // });
+        const line1 = new Konva.Line({
+            points: [0, 640, 1080, 640],
+            stroke: 'red',
+            strokeWidth: 1,
+        });
+        const line2 = new Konva.Line({
+            points: [0, 640 * 2, 1080, 640 * 2],
+            stroke: 'red',
+            strokeWidth: 1,
+        });
+        const group = new Konva.Group({
+            draggable: false,
+        });
+        group.add(rect, line1, line2);
+        group.scale({
+            x: scale,
+            y: scale
+        });
+        group.position({
+            x: (screenWidth - rect.getClientRect().width) / 2,
+            y: 20,
+        });
+        layer.add(group);
+        // layer.add(line1);
+        // layer.add(line2);
+        stage.add(layer);
+        const scaleBy = 1.5;
+        stage.on('wheel', (e) => {
+            e.evt.preventDefault();
+            const oldScale = stage.scaleX();
+            const pointer = stage.getPointerPosition();
+            const mousePointTo = {
+                x: (pointer.x - stage.x()) / oldScale,
+                y: (pointer.y - stage.y()) / oldScale,
+            };
+            let direction = e.evt.deltaY < 0 ? 1 : -1;
+            const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+            stage.scale({ x: newScale, y: newScale });
+            const newPos = {
+                x: pointer.x - mousePointTo.x * newScale,
+                y: pointer.y - mousePointTo.y * newScale,
+            };
+            stage.position(newPos);
+        });
+        function upload(event) {
+            const input = event.target.firstElementChild;
+            if (input) {
+                input.click();
+            }
+        }
+        function changeInput(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                Array.from(files).forEach(element => {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        createImage(this.result);
+                    };
+                    reader.readAsDataURL(element);
+                });
+            }
+        }
+        const container = document.getElementById('container');
+        container.addEventListener('dragover', function (event) {
+            event.preventDefault();
+        });
+        container.tabIndex = 1;
+        // focus it
+        // also stage will be in focus on its click
+        container.focus();
+        const DELTA = 4;
+        container.addEventListener('keydown', function (e) {
+            if (e.keyCode === 46 && target) {
+                target.destroy();
+                if (transformer) {
+                    transformer.destroy();
+                }
+            }
+            // else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+            //     undo();
+            // } else if (e.key === 'y' && (e.ctrlKey || e.metaKey)) {
+            //     redo();
+            // } 
+            else {
+                return;
+            }
+            e.preventDefault();
+        });
+
+        // function to calculate crop values from source image, its visible size and a crop strategy
+        function getCrop(image, size, clipPosition = 'center-middle') {
+            const width = size.width;
+            const height = size.height;
+            const aspectRatio = width / height;
+
+            let newWidth;
+            let newHeight;
+
+            const imageRatio = image.width / image.height;
+
+            if (aspectRatio >= imageRatio) {
+                newWidth = image.width;
+                newHeight = image.width / aspectRatio;
+            } else {
+                newWidth = image.height * aspectRatio;
+                newHeight = image.height;
+            }
+
+            let x = 0;
+            let y = 0;
+            if (clipPosition === 'left-top') {
+                x = 0;
+                y = 0;
+            } else if (clipPosition === 'left-middle') {
+                x = 0;
+                y = (image.height - newHeight) / 2;
+            } else if (clipPosition === 'left-bottom') {
+                x = 0;
+                y = image.height - newHeight;
+            } else if (clipPosition === 'center-top') {
+                x = (image.width - newWidth) / 2;
+                y = 0;
+            } else if (clipPosition === 'center-middle') {
+                x = (image.width - newWidth) / 2;
+                y = (image.height - newHeight) / 2;
+            } else if (clipPosition === 'center-bottom') {
+                x = (image.width - newWidth) / 2;
+                y = image.height - newHeight;
+            } else if (clipPosition === 'right-top') {
+                x = image.width - newWidth;
+                y = 0;
+            } else if (clipPosition === 'right-middle') {
+                x = image.width - newWidth;
+                y = (image.height - newHeight) / 2;
+            } else if (clipPosition === 'right-bottom') {
+                x = image.width - newWidth;
+                y = image.height - newHeight;
+            } else if (clipPosition === 'scale') {
+                x = 0;
+                y = 0;
+                newWidth = width;
+                newHeight = height;
+            } else {
+                console.error(
+                    new Error('Unknown clip position property - ' + clipPosition)
+                );
+            }
+
+            return {
+                cropX: x,
+                cropY: y,
+                cropWidth: newWidth,
+                cropHeight: newHeight,
+            };
+        }
+
+        // function to apply crop
+        function applyCrop(pos, image) {
+            const img = image;
+            img.setAttr('lastCropUsed', pos);
+            const crop = getCrop(
+                img.image(),
+                { width: img.width(), height: img.height() },
+                pos
+            );
+            img.setAttrs(crop);
+        }
+        container.addEventListener('drop', function (event) {
+            // const image = new Image();
+            // image.onload = function () {
+            Konva.Image.fromURL(
+                event.dataTransfer.getData('url'),
+                (img) => {
+                    img.setAttrs({
+                        x: (screenWidth - rect.getClientRect().width) / 2,
+                        name: 'image',
+                        draggable: true,
+                    });
+                    layer.add(img);
+                    // apply default left-top crop
+                    applyCrop('center-middle', img);
+
+                    img.on('transform', () => {
+                        // reset scale on transform
+                        img.opacity(.5);
+                        img.setAttrs({
+                            scaleX: 1,
+                            scaleY: 1,
+                            width: img.width() * img.scaleX(),
+                            height: img.height() * img.scaleY(),
+                        });
+                        applyCrop(img.getAttr('lastCropUsed'), img);
+                    });
+                    img.on('transformend', () => {
+                        img.opacity(1);
+                    });
+                    img.on('dragmove', () => {
+                        img.opacity(.5);
+                    });
+                    img.on('dragend', () => {
+                        img.opacity(1);
+                    });
+                    group.add(img);
+                }
+            );
+            // const img = new Konva.Image({
+            //     draggable: true,
+            //     image: image,
+            //     name: 'image',
+            //     draggable: true,
+            // });
+            // img.on("transform", () => {
+            //     // reset scale on transform
+            //     img.setAttrs({
+            //         scaleX: 1,
+            //         scaleY: 1,
+            //         width: img.width() * img.scaleX(),
+            //         height: img.height() * img.scaleY(),
+            //     });
+            //     applyCrop(img.getAttr("lastCropUsed"));
+            // });
+            // const layer = new Konva.Layer();
+            // layer.add(img);
+            // const tr = new Konva.Transformer({
+            //     nodes: [img],
+            //     keepRatio: true,
+            //     flipEnabled: false,
+            //     boundBoxFunc: (oldBox, newBox) => {
+            //         if (Math.abs(newBox.width) < 10 || Math.abs(newBox.height) < 10) {
+            //             return oldBox;
+            //         }
+            //         return newBox;
+            //     },
+            // });
+
+            // layer.add(tr);
+            // stage.add(layer);
+            // };
+            // image.src = event.dataTransfer.getData('url');
+            event.preventDefault();
+        });
+        const row = document.getElementById('sidebar__row');
+        function createActionEdit(url) {
+            const element = document.createElement('div');
+            element.classList.add('sidebar__edit');
+            element.addEventListener('click', () => openModalEdit(url));
+            element.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil</title><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>';
+            return element;
+        }
+        const modalOverlay = document.getElementById('modal__overlay');
+        const modalImage = document.getElementById('modal__image');
+        const modalWidth = document.getElementById('modal__width');
+        const modalHeight = document.getElementById('modal__height');
+        let cropper = null;
+        function openModalEdit(url) {
+            modalImage.src = url;
+            cropper = new Cropper(modalImage, {
+                aspectRatio: 16 / 9,
+                viewMode: 3,
+                crop(event) {
+                    console.log(event);
+                    modalWidth.querySelector('span').innerText = event.detail.width;
+                    modalHeight.querySelector('span').innerText = event.detail.height;
+                },
+            });
+            // cropper.setCropBoxData({
+            //     width: 1080,
+            //     height: 640
+            // })
+            modalOverlay.classList.remove('modal__overlay--hidden');
+        }
+        function closeModal() {
+            modalOverlay.classList.add('modal__overlay--hidden');
+            cropper.destroy();
+        }
+        function getImage() {
+            const image = cropper.getCroppedCanvas({
+                width: 1080,
+                height: 640
+            }).toDataURL('image/jpeg');
+            createImage(image);
+            closeModal();
+        }
+        function createActions(url) {
+            const element = document.createElement('div');
+            element.classList.add('sidebar__actions');
+            element.appendChild(createActionEdit(url));
+            return element;
+        }
+        function createImage(url) {
+            const element = document.createElement('div');
+            element.classList.add('sidebar__imagem');
+            element.setAttribute("draggable", true);
+            element.style.backgroundImage = `url(${url})`;
+            element.addEventListener('drop', function (event) {
+                event.preventDefault();
+                console.log('drop', event);
+            });
+            element.addEventListener('dragstart', function (event) {
+                event.dataTransfer.setData('url', url);
+            });
+            element.appendChild(createActions(url));
+            row.appendChild(element);
+        }
+        var canvasWidth = 1080;
+        var canvasHeight = 1920;
+        var GUIDELINE_OFFSET = 5;
+        // Função para obter linhas de guia de alinhamento
+        function getLineGuideStops(skipShape) {
+            var vertical = [0, canvasWidth / 2, canvasWidth];
+            var horizontal = [0, canvasHeight / 2, canvasHeight];
+
+            stage.find('.image').forEach((guideItem) => {
+                if (guideItem === skipShape) {
+                    return;
+                }
+                var box = guideItem.getClientRect();
+                vertical.push([box.x, box.x + box.width, box.x + box.width / 2]);
+                horizontal.push([box.y, box.y + box.height, box.y + box.height / 2]);
+            });
+
+            return {
+                vertical: vertical.flat(),
+                horizontal: horizontal.flat(),
+            };
+        }
+
+        // Função para obter pontos de alinhamento de um objeto
+        function getObjectSnappingEdges(node) {
+            var box = node.getClientRect();
+            var absPos = node.absolutePosition();
+
+            return {
+                vertical: [
+                    { guide: Math.round(box.x), offset: Math.round(absPos.x - box.x), snap: 'start' },
+                    { guide: Math.round(box.x + box.width / 2), offset: Math.round(absPos.x - box.x - box.width / 2), snap: 'center' },
+                    { guide: Math.round(box.x + box.width), offset: Math.round(absPos.x - box.x - box.width), snap: 'end' },
+                ],
+                horizontal: [
+                    { guide: Math.round(box.y), offset: Math.round(absPos.y - box.y), snap: 'start' },
+                    { guide: Math.round(box.y + box.height / 2), offset: Math.round(absPos.y - box.y - box.height / 2), snap: 'center' },
+                    { guide: Math.round(box.y + box.height), offset: Math.round(absPos.y - box.y - box.height), snap: 'end' },
+                ],
+            };
+        }
+
+        // Função para encontrar todas as possibilidades de alinhamento
+        function getGuides(lineGuideStops, itemBounds) {
+            var resultV = [];
+            var resultH = [];
+
+            lineGuideStops.vertical.forEach((lineGuide) => {
+                itemBounds.vertical.forEach((itemBound) => {
+                    var diff = Math.abs(lineGuide - itemBound.guide);
+                    if (diff < GUIDELINE_OFFSET) {
+                        resultV.push({ lineGuide: lineGuide, diff: diff, snap: itemBound.snap, offset: itemBound.offset });
+                    }
+                });
+            });
+
+            lineGuideStops.horizontal.forEach((lineGuide) => {
+                itemBounds.horizontal.forEach((itemBound) => {
+                    var diff = Math.abs(lineGuide - itemBound.guide);
+                    if (diff < GUIDELINE_OFFSET) {
+                        resultH.push({ lineGuide: lineGuide, diff: diff, snap: itemBound.snap, offset: itemBound.offset });
+                    }
+                });
+            });
+
+            var guides = [];
+
+            var minV = resultV.sort((a, b) => a.diff - b.diff)[0];
+            var minH = resultH.sort((a, b) => a.diff - b.diff)[0];
+            if (minV) {
+                guides.push({ lineGuide: minV.lineGuide, offset: minV.offset, orientation: 'V', snap: minV.snap });
+            }
+            if (minH) {
+                guides.push({ lineGuide: minH.lineGuide, offset: minH.offset, orientation: 'H', snap: minH.snap });
+            }
+            return guides;
+        }
+
+        // Função para desenhar linhas de guia
+        function drawGuides(guides) {
+            guides.forEach((lg) => {
+                if (lg.orientation === 'H') {
+                    var line = new Konva.Line({
+                        points: [-6000, 0, 6000, 0],
+                        stroke: 'rgb(0, 161, 255)',
+                        strokeWidth: 1,
+                        name: 'guid-line',
+                        dash: [4, 6],
+                    });
+                    layer.add(line);
+                    line.absolutePosition({
+                        x: 0,
+                        y: lg.lineGuide,
+                    });
+                } else if (lg.orientation === 'V') {
+                    var line = new Konva.Line({
+                        points: [0, -6000, 0, 6000],
+                        stroke: 'rgb(0, 161, 255)',
+                        strokeWidth: 1,
+                        name: 'guid-line',
+                        dash: [4, 6],
+                    });
+                    layer.add(line);
+                    line.absolutePosition({
+                        x: lg.lineGuide,
+                        y: 0,
+                    });
+                }
+            });
+        }
+
+        function alignmentGuide(e) {
+            // Limpa todas as linhas anteriores na tela
+            layer.find('.guid-line').forEach((l) => l.destroy());
+
+            // Encontra possíveis linhas de alinhamento
+            var lineGuideStops = getLineGuideStops(e.target);
+            // Encontra pontos de alinhamento do objeto atual
+            var itemBounds = getObjectSnappingEdges(e.target);
+
+            // Encontra onde podemos alinhar o objeto atual
+            var guides = getGuides(lineGuideStops, itemBounds);
+
+            // Não faz nada se não houver alinhamento
+            if (!guides.length) {
+                return;
+            }
+
+            drawGuides(guides);
+
+            var absPos = e.target.absolutePosition();
+            // Agora força a posição do objeto
+            guides.forEach((lg) => {
+                switch (lg.snap) {
+                    case 'start': {
+                        switch (lg.orientation) {
+                            case 'V': {
+                                absPos.x = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                            case 'H': {
+                                absPos.y = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    case 'center': {
+                        switch (lg.orientation) {
+                            case 'V': {
+                                absPos.x = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                            case 'H': {
+                                absPos.y = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    case 'end': {
+                        switch (lg.orientation) {
+                            case 'V': {
+                                absPos.x = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                            case 'H': {
+                                absPos.y = lg.lineGuide + lg.offset;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+            e.target.absolutePosition(absPos);
+        }
+
+        layer.on('dragmove', function (e) {
+            alignmentGuide(e);
+        });
+
+        layer.on('dragend', function (e) {
+            // Limpa todas as linhas anteriores na tela
+            layer.find('.guid-line').forEach((l) => l.destroy());
+        });
+        function getTimestamp() {
+            return new Date().getTime();
+        }
+        async function download() {
+            const group2 = group.clone();
+            // stage.find('.image').forEach((guideItem) => {
+            //     group2.add(guideItem)
+            // })
+            const ImageBase64 = await group2.toDataURL({
+                mimeType: 'image/jpeg',
+                quality: 1,
+            });
+            const link = document.createElement("a"); //Create <a>
+            link.href = ImageBase64; //Image Base64 Goes here
+            const timestamp  = getTimestamp();
+            link.download = `criativo-${timestamp}.jpeg`; //File name Here
+            link.click(); //Downloaded file
+        }
+    </script>
+</body>
+
+</html>

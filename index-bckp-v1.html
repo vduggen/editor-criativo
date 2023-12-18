@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        html, body {
+            background-color: #f2f2f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #container {
+            width: 1080px;
+            height: 1920px;
+            background-color: #fff;
+        }
+
+        .image-selector {
+            border: 1px solid #000;
+            height: calc(1920px / 3);
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            cursor: pointer;
+        }
+        .image-selector:first-child {
+            border-bottom: none;
+        }
+        .image-selector:last-child {
+            border-top: none;
+        }
+        .image-input-file {
+            visibility: hidden;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="image-selector" id="image1">
+            <input
+                type="file"
+                name="imageInputFile1"
+                class="image-input-file"
+                id="imageInputFile1"
+                accept="image/*"
+            >
+            <img
+                class="image-preview"
+                id="imagePreview1"
+                alt="Preview 1"
+            >
+        </div>
+        <div class="image-selector" id="image2">
+            <input
+                type="file"
+                name="imageInputFile2"
+                class="image-input-file"
+                id="imageInputFile2"
+                accept="image/*"
+            >
+            <img
+                class="image-preview"
+                id="imagePreview2"
+                alt="Preview 2"
+            >
+        </div>
+        <div class="image-selector" id="image3">
+            <input
+                type="file"
+                name="imageInputFile3"
+                class="image-input-file"
+                id="imageInputFile3"
+                accept="image/*"
+            >
+            <img
+                class="image-preview"
+                id="imagePreview3"
+                alt="Preview 3"
+            >
+        </div>
+    </div>
+
+    <script>
+        const arrImagesSelectors = document.getElementsByClassName('image-selector');
+        Array.from(arrImagesSelectors).forEach(element => {
+            element.addEventListener('click', uploadFile);
+        });
+        const arrImageInputFiles = document.getElementsByClassName('image-input-file');
+        Array.from(arrImagesSelectors).forEach(element => {
+            element.addEventListener('change', changeImageInputFile);
+        });
+        function uploadFile(event) {
+            const imageInputFile = event.target.querySelector('.image-input-file');
+            if (imageInputFile) {
+                imageInputFile.click();
+            }
+        }
+        function changeImageInputFile(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                const firstFile = files[0];
+                const reader = new FileReader();
+                reader.onload = function () {
+                    event.target.nextElementSibling.src = this.result;
+                }
+                reader.readAsDataURL(firstFile);
+            }
+        }
+    </script>
+</body>
+</html>

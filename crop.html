@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabric.js Image Cropper</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.min.js"></script>
+</head>
+<body>
+    <canvas id="canvas" width="500" height="400"></canvas>
+    <button id="cropButton">Recortar</button>
+
+    <script>
+        var canvas = new fabric.Canvas('canvas');
+        var cropButton = document.getElementById('cropButton');
+        var currentImage;
+        var cropRect;
+
+        // Carrega a imagem localmente
+        fabric.Image.fromURL('golf-dianteira-crop.jpg', function (img) {
+            // Limpa o canvas e adiciona a nova imagem
+            canvas.clear();
+            canvas.add(img);
+            currentImage = img;
+        });
+
+        // Manipulador de evento para iniciar o processo de recorte
+        cropButton.addEventListener('click', function () {
+            if (currentImage) {
+                startCrop();
+            }
+        });
+
+        function startCrop() {
+            // Habilita o modo de recorte
+            canvas.discardActiveObject();
+            canvas.selection = false;
+
+            // Adiciona um retângulo transparente para selecionar a área de recorte
+            cropRect = new fabric.Rect({
+                fill: 'rgba(0,0,0,0)',
+                originX: 'left',
+                originY: 'top',
+                stroke: '#ccc',
+                strokeWidth: 2,
+                selectable: false
+            });
+
+            // Adiciona o retângulo ao canvas
+            canvas.add(cropRect);
+
+            // Adiciona uma borda ao redor do objeto selecionado
+            currentImage.set({
+                borderColor: 'red',
+                cornerColor: 'green',
+                cornerSize: 6,
+                transparentCorners: false,
+                hasControls: false, // Impede a exibição dos controles de redimensionamento
+                hasBorders: false   // Impede a exibição das bordas de redimensionamento
+            });
+
+            // Atualiza o canvas
+            canvas.renderAll();
+        }
+    </script>
+</body>
+</html>
