@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&family=Poppins:wght@500&display=swap"
+        rel="stylesheet">
     <style>
         html,
         body {
@@ -22,15 +24,62 @@
             position: relative;
         }
 
+        #menus {
+            width: 72px;
+            height: 100%;
+            position: absolute;
+            background-color: #112E40;
+            z-index: 1;
+            fill: white;
+        }
+
+        .menus__menu--active {
+            background-color: #305366;
+        }
+
+        .menus__menu:not(.menus__menu--active):hover {
+            background-color: #0E1F2A;
+        }
+
+        .menus__menu {
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: ease-in-out .3s;
+        }
+
+        .menus__menu svg {
+            width: 32px;
+            height: 32px;
+            pointer-events: none;
+        }
+
         #sidebar {
             position: absolute;
-            left: 0;
+            left: 72px;
             top: 0;
             width: 350px;
             height: 100%;
             background-color: #fff;
             padding: 16px;
-            box-shadow: 7px 7px 21px #f2f2f2, -7px -7px 21px #ffffff;
+            box-shadow: 7px 7px 21px #f2f2f2;
+            z-index: 1;
+        }
+
+        .sidebar__aba {
+            display: none;
+            width: 0;
+            height: 0;
+            z-index: -1;
+        }
+
+        .sidebar__aba--active {
+            display: block;
+            width: 100%;
+            height: auto;
             z-index: 1;
         }
 
@@ -210,6 +259,10 @@
         #download:hover {
             fill: #83F250;
         }
+
+        .sidebar__price-tag {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -219,6 +272,29 @@
         <path
             d="M2 12H4V17H20V12H22V17C22 18.11 21.11 19 20 19H4C2.9 19 2 18.11 2 17V12M12 15L17.55 9.54L16.13 8.13L13 11.25V2H11V11.25L7.88 8.13L6.46 9.55L12 15Z" />
     </svg>
+    <aside id="menus">
+        <div class="menus__menu menus__menu--active" onclick="trocarAba(event, 'fotos')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <title>file-upload-outline</title>
+                <path
+                    d="M14,2L20,8V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2H14M18,20V9H13V4H6V20H18M12,12L16,16H13.5V19H10.5V16H8L12,12Z" />
+            </svg>
+        </div>
+        <div class="menus__menu" onclick="trocarAba(event, 'tag')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <title>tag-outline</title>
+                <path
+                    d="M21.41 11.58L12.41 2.58A2 2 0 0 0 11 2H4A2 2 0 0 0 2 4V11A2 2 0 0 0 2.59 12.42L11.59 21.42A2 2 0 0 0 13 22A2 2 0 0 0 14.41 21.41L21.41 14.41A2 2 0 0 0 22 13A2 2 0 0 0 21.41 11.58M13 20L4 11V4H11L20 13M6.5 5A1.5 1.5 0 1 1 5 6.5A1.5 1.5 0 0 1 6.5 5Z" />
+            </svg>
+        </div>
+        <div class="menus__menu" onclick="trocarAba(event, 'texto')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <title>format-text</title>
+                <path
+                    d="M18.5,4L19.66,8.35L18.7,8.61C18.25,7.74 17.79,6.87 17.26,6.43C16.73,6 16.11,6 15.5,6H13V16.5C13,17 13,17.5 13.33,17.75C13.67,18 14.33,18 15,18V19H9V18C9.67,18 10.33,18 10.67,17.75C11,17.5 11,17 11,16.5V6H8.5C7.89,6 7.27,6 6.74,6.43C6.21,6.87 5.75,7.74 5.3,8.61L4.34,8.35L5.5,4H18.5Z" />
+            </svg>
+        </div>
+    </aside>
     <aside id="sidebar">
         <!-- <svg onclick="undo()" id="sidebarActionUndo" class="sidebar__action sidebar__action--disabled"
             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -232,13 +308,40 @@
             <path
                 d="M10.5 18H18V20H10.5C6.91 20 4 17.09 4 13.5S6.91 7 10.5 7H16.17L13.08 3.91L14.5 2.5L20 8L14.5 13.5L13.09 12.09L16.17 9H10.5C8 9 6 11 6 13.5S8 18 10.5 18Z" />
         </svg> -->
-        <button class="button" onclick="upload(event)">
-            Fazer upload de arquivos
-            <input type="file" name="ds_arquivo" id="ds_arquivo" onchange="changeInput(event)" accept="image/*"
-                multiple>
-        </button>
+        <div data-aba="fotos" class="sidebar__aba sidebar__aba--active">
+            <button class="button" onclick="upload(event)">
+                Fazer upload de arquivos
+                <input type="file" name="ds_arquivo" id="ds_arquivo" onchange="changeInput(event)" accept="image/*"
+                    multiple>
+            </button>
 
-        <div id="sidebar__row">
+            <div id="sidebar__row">
+            </div>
+        </div>
+        <div data-aba="tag" class="sidebar__aba">
+            <img onclick="addPriceTag('modelo1')" class="sidebar__price-tag" src="./img/tags/price-tag-3.png"
+                alt="Price Tag">
+            <img onclick="addPriceTag('modelo2')" class="sidebar__price-tag" src="./img/tags/price-tag-feed.png"
+                alt="Price Tag">
+            <img onclick="addPriceTag('modelo3', './img/tags/price-tag.png')" class="sidebar__price-tag"
+                src="./img/tags/price-tag.png" alt="Price Tag">
+        </div>
+        <div data-aba="texto" class="sidebar__aba">
+            <button class="button" onclick="adicionarTexto()">
+                Adicionar texto
+            </button>
+            <div class="mt-4">
+                <label for="ds_cor">Cor:</label> <br>
+                <input disabled type="color" id="ds_cor" name="ds_cor" />
+            </div>
+            <div class="mt-4">
+                <label for="nr_fonte">Tamanho fonte:</label> <br>
+                <input disabled type="number" name="nr_fonte" id="nr_fonte">
+            </div>
+            <div class="mt-4">
+                <label for="ds_texto">Texto:</label> <br>
+                <input disabled type="text" name="ds_texto" id="ds_texto">
+            </div>
         </div>
     </aside>
     <div id="modal__overlay" class="modal__overlay--hidden">
@@ -250,9 +353,9 @@
                         d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
                 </svg>
             </div>
-
+            <!-- 
             <h4 id="modal__width">Largura: <span>0</span></h4>
-            <h4 id="modal__height">Altura: <span>0</span></h4>
+            <h4 id="modal__height">Altura: <span>0</span></h4> -->
             <div id="modal__container">
                 <img id="modal__image" src="" alt="Image to crop">
             </div>
@@ -339,29 +442,6 @@
         //         type: "REDO"
         //     });
         // });
-        let target = null;
-        let transformer = null;
-        stage.on('click tap', (e) => {
-            if (transformer) {
-                transformer.destroy();
-            }
-            if (e.target === stage || e.target.isCroppingElement) {
-                layer.draw();
-                target = null;
-                return;
-            }
-            target = e.target;
-            transformer = new Konva.Transformer();
-            transformer.on('transform', function (e) {
-                alignmentGuide(e);
-            });
-            transformer.on('transformend', function () {
-                layer.find('.guid-line').forEach((l) => l.destroy());
-            });
-            layer.add(transformer);
-            transformer.attachTo(e.target);
-            layer.draw();
-        })
         let scale = 1;
         let rect = null;
         const rectWidth = 1080;
@@ -466,11 +546,6 @@
                     transformer.destroy();
                 }
             }
-            // else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
-            //     undo();
-            // } else if (e.key === 'y' && (e.ctrlKey || e.metaKey)) {
-            //     redo();
-            // } 
             else {
                 return;
             }
@@ -556,8 +631,6 @@
             img.setAttrs(crop);
         }
         container.addEventListener('drop', function (event) {
-            // const image = new Image();
-            // image.onload = function () {
             Konva.Image.fromURL(
                 event.dataTransfer.getData('url'),
                 (img) => {
@@ -593,40 +666,6 @@
                     group.add(img);
                 }
             );
-            // const img = new Konva.Image({
-            //     draggable: true,
-            //     image: image,
-            //     name: 'image',
-            //     draggable: true,
-            // });
-            // img.on("transform", () => {
-            //     // reset scale on transform
-            //     img.setAttrs({
-            //         scaleX: 1,
-            //         scaleY: 1,
-            //         width: img.width() * img.scaleX(),
-            //         height: img.height() * img.scaleY(),
-            //     });
-            //     applyCrop(img.getAttr("lastCropUsed"));
-            // });
-            // const layer = new Konva.Layer();
-            // layer.add(img);
-            // const tr = new Konva.Transformer({
-            //     nodes: [img],
-            //     keepRatio: true,
-            //     flipEnabled: false,
-            //     boundBoxFunc: (oldBox, newBox) => {
-            //         if (Math.abs(newBox.width) < 10 || Math.abs(newBox.height) < 10) {
-            //             return oldBox;
-            //         }
-            //         return newBox;
-            //     },
-            // });
-
-            // layer.add(tr);
-            // stage.add(layer);
-            // };
-            // image.src = event.dataTransfer.getData('url');
             event.preventDefault();
         });
         const row = document.getElementById('sidebar__row');
@@ -639,24 +678,13 @@
         }
         const modalOverlay = document.getElementById('modal__overlay');
         const modalImage = document.getElementById('modal__image');
-        const modalWidth = document.getElementById('modal__width');
-        const modalHeight = document.getElementById('modal__height');
         let cropper = null;
         function openModalEdit(url) {
             modalImage.src = url;
             cropper = new Cropper(modalImage, {
                 aspectRatio: 16 / 9,
                 viewMode: 3,
-                crop(event) {
-                    console.log(event);
-                    modalWidth.querySelector('span').innerText = event.detail.width;
-                    modalHeight.querySelector('span').innerText = event.detail.height;
-                },
             });
-            // cropper.setCropBoxData({
-            //     width: 1080,
-            //     height: 640
-            // })
             modalOverlay.classList.remove('modal__overlay--hidden');
         }
         function closeModal() {
@@ -684,7 +712,6 @@
             element.style.backgroundImage = `url(${url})`;
             element.addEventListener('drop', function (event) {
                 event.preventDefault();
-                console.log('drop', event);
             });
             element.addEventListener('dragstart', function (event) {
                 event.dataTransfer.setData('url', url);
@@ -883,18 +910,195 @@
         }
         async function download() {
             const group2 = group.clone();
-            // stage.find('.image').forEach((guideItem) => {
-            //     group2.add(guideItem)
-            // })
             const ImageBase64 = await group2.toDataURL({
                 mimeType: 'image/jpeg',
                 quality: 1,
             });
             const link = document.createElement("a"); //Create <a>
             link.href = ImageBase64; //Image Base64 Goes here
-            const timestamp  = getTimestamp();
+            const timestamp = getTimestamp();
             link.download = `criativo-${timestamp}.jpeg`; //File name Here
             link.click(); //Downloaded file
+        }
+        function trocarAba(event, aba) {
+            const elementActive = document.querySelector('.menus__menu.menus__menu--active');
+            if (elementActive) {
+                elementActive.classList.remove('menus__menu--active');
+            }
+            event.target.classList.add('menus__menu--active');
+            const elementSidebarActive = document.querySelector('.sidebar__aba.sidebar__aba--active');
+            if (elementSidebarActive) {
+                elementSidebarActive.classList.remove('sidebar__aba--active');
+            }
+            const abaSidebar = document.querySelector(`[data-aba="${aba}"]`);
+            if (abaSidebar) {
+                abaSidebar.classList.add('sidebar__aba--active');
+            }
+        }
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.font = 'normal 20px Bebas Neue';
+        let isFontLoaded = false;
+        const TEXT_TEXT = 'Some test text;';
+        const initialMeasure = ctx.measureText(TEXT_TEXT);
+        const initialWidth = initialMeasure.width;
+        function whenFontIsLoaded(callback, attemptCount) {
+            if (attemptCount === undefined) {
+                attemptCount = 0;
+            }
+            if (attemptCount >= 20) {
+                callback();
+                return;
+            }
+            if (isFontLoaded) {
+                callback();
+                return;
+            }
+            const metrics = ctx.measureText(TEXT_TEXT);
+            const width = metrics.width;
+            if (width !== initialWidth) {
+                isFontLoaded = true;
+                callback();
+            } else {
+                setTimeout(function () {
+                    whenFontIsLoaded(callback, attemptCount + 1);
+                }, 1000);
+            }
+        }
+        let textNode = null;
+        let rectText = null;
+        let groupText = null;
+        let PADDING_X = 40;
+        let PADDING_Y = 30;
+        let textTransformer = null;
+        function clickTap(event) {
+            ds_cor.disabled = false;
+            ds_cor.value = event.target.fill();
+            nr_fonte.disabled = false;
+            nr_fonte.value = event.target.fontSize();
+            ds_texto.disabled = false;
+            ds_texto.value = event.target.text();
+            textTransformer = event.target;
+        }
+        function addPriceTag(ds_modelo, ds_url) {
+            if (['modelo1', 'modelo2'].includes(ds_modelo)) {
+                let fillText = 'white';
+                let fill = 'white';
+                if (ds_modelo === 'modelo1') {
+                    fillText = 'black';
+                }
+                if (ds_modelo === 'modelo2') {
+                    fill = '#e60026';
+                }
+                textNode = new Konva.Text({
+                    text: 'R$ 0,00',
+                    fontSize: 64,
+                    fill: fillText,
+                    fontFamily: "Bebas Neue"
+                });
+                textNode.on('transformend', () => {
+                    setSizeRectText();
+                    setPositionGroupText();
+                });
+                arrTextos.push(textNode);
+                rectText = new Konva.Rect({
+                    fill,
+                });
+                setSizeRectText();
+                const box = rectText.getClientRect();
+                textNode.position({
+                    x: box.x + 20,
+                    y: box.y + 20
+                })
+                groupText = new Konva.Group({
+                    draggable: true,
+                });
+                setPositionGroupText();
+                groupText.add(rectText, textNode);
+                layer.add(groupText);
+                textNode.on('click tap', clickTap);
+                group.add(groupText);
+                whenFontIsLoaded(function () {
+                    // set font style when font is loaded
+                    // so Konva will recalculate text wrapping if it has limited width
+                    textNode.fontFamily('Bebas Neue');
+                    setSizeRectText();
+                    setPositionGroupText();
+                });
+            }
+            if (['modelo3'].includes(ds_modelo)) {
+                Konva.Image.fromURL(ds_url, (img) => {
+                    img.setAttrs({
+                        draggable: true,
+                    })
+                    layer.add(img);
+                });
+            }
+        }
+        function setPositionGroupText() {
+            groupText.position({
+                x: 1080 / 2 - rectText.width() / 2,
+                y: 640 - rectText.height() / 2,
+            })
+        }
+        function setSizeRectText() {
+            rectText.width(textNode.width() + PADDING_X);
+            rectText.height(textNode.height() + PADDING_Y);
+        }
+        const ds_cor = document.getElementById('ds_cor');
+        const nr_fonte = document.getElementById('nr_fonte');
+        const ds_texto = document.getElementById('ds_texto');
+        ds_cor.addEventListener('blur', (event) => {
+            textTransformer.fill(event.target.value);
+        })
+        nr_fonte.addEventListener('blur', (event) => {
+            textTransformer.fontSize(+event.target.value);
+        })
+        ds_texto.addEventListener('blur', (event) => {
+            textTransformer.text(event.target.value);
+        })
+        let target = null;
+        let transformer = null;
+        let arrTextos = [];
+        stage.on('click tap', (e) => {
+            if (transformer) {
+                transformer.destroy();
+            }
+            if (!arrTextos.includes(e.target)) {
+                ds_cor.value = "";
+                ds_cor.disabled = true;
+                nr_fonte.value = "";
+                nr_fonte.disabled = true;
+                ds_texto.value = "";
+                ds_texto.disabled = true;
+            }
+            if (e.target === stage || e.target.isCroppingElement) {
+                layer.draw();
+                target = null;
+                return;
+            }
+            target = e.target;
+            transformer = new Konva.Transformer();
+            transformer.on('transform', function (e) {
+                alignmentGuide(e);
+            });
+            transformer.on('transformend', function () {
+                layer.find('.guid-line').forEach((l) => l.destroy());
+            });
+            layer.add(transformer);
+            transformer.attachTo(e.target);
+            layer.draw();
+        });
+        function adicionarTexto() {
+            const textNode = new Konva.Text({
+                text: 'R$ 0,00',
+                fontSize: 64,
+                fontFamily: "Bebas Neue",
+                draggable: true,
+            });
+            arrTextos.push(textNode);
+            textNode.on('click tap', clickTap);
+            group.add(textNode)
         }
     </script>
 </body>
