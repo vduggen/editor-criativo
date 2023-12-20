@@ -263,6 +263,10 @@
         .sidebar__price-tag {
             cursor: pointer;
         }
+
+        [data-aba="modelo"] img {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -273,11 +277,18 @@
             d="M2 12H4V17H20V12H22V17C22 18.11 21.11 19 20 19H4C2.9 19 2 18.11 2 17V12M12 15L17.55 9.54L16.13 8.13L13 11.25V2H11V11.25L7.88 8.13L6.46 9.55L12 15Z" />
     </svg>
     <aside id="menus">
-        <div class="menus__menu menus__menu--active" onclick="trocarAba(event, 'fotos')">
+        <div class="menus__menu menus__menu--active" onclick="trocarAba(event, 'modelo')">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <title>file-upload-outline</title>
+                <title>grid-large</title>
                 <path
-                    d="M14,2L20,8V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2H14M18,20V9H13V4H6V20H18M12,12L16,16H13.5V19H10.5V16H8L12,12Z" />
+                    d="M4,2H20A2,2 0 0,1 22,4V20A2,2 0 0,1 20,22H4C2.92,22 2,21.1 2,20V4A2,2 0 0,1 4,2M4,4V11H11V4H4M4,20H11V13H4V20M20,20V13H13V20H20M20,4H13V11H20V4Z" />
+            </svg>
+        </div>
+        <div class="menus__menu" onclick="trocarAba(event, 'fotos')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <title>image-outline</title>
+                <path
+                    d="M19,19H5V5H19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M13.96,12.29L11.21,15.83L9.25,13.47L6.5,17H17.5L13.96,12.29Z" />
             </svg>
         </div>
         <div class="menus__menu" onclick="trocarAba(event, 'tag')">
@@ -296,19 +307,11 @@
         </div>
     </aside>
     <aside id="sidebar">
-        <!-- <svg onclick="undo()" id="sidebarActionUndo" class="sidebar__action sidebar__action--disabled"
-            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <title>arrow-u-left-top</title>
-            <path
-                d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" />
-        </svg>
-        <svg onclick="redo()" id="sidebarActionRedo" class="sidebar__action sidebar__action--disabled"
-            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <title>arrow-u-right-top</title>
-            <path
-                d="M10.5 18H18V20H10.5C6.91 20 4 17.09 4 13.5S6.91 7 10.5 7H16.17L13.08 3.91L14.5 2.5L20 8L14.5 13.5L13.09 12.09L16.17 9H10.5C8 9 6 11 6 13.5S8 18 10.5 18Z" />
-        </svg> -->
-        <div data-aba="fotos" class="sidebar__aba sidebar__aba--active">
+        <div data-aba="modelo" class="sidebar__aba sidebar__aba--active">
+            <img onclick="alterarModelo('modelo1')" src="./img/modelos/modelo1.jpg" alt="Modelo">
+            <img onclick="alterarModelo('modelo8')" src="./img/modelos/modelo8.jpg" alt="Modelo">
+        </div>
+        <div data-aba="fotos" class="sidebar__aba">
             <button class="button" onclick="upload(event)">
                 Fazer upload de arquivos
                 <input type="file" name="ds_arquivo" id="ds_arquivo" onchange="changeInput(event)" accept="image/*"
@@ -443,57 +446,72 @@
         //     });
         // });
         let scale = 1;
-        let rect = null;
         const rectWidth = 1080;
-        const rectHeight = 1920;
+        let rectHeight = 1920;
         const margin = 20;
         const screenWidth = 1920;
         const screenHeight = 919;
-        const layer = new Konva.Layer();
-        rect = new Konva.Rect({
-            width: 1080,
-            height: 1920,
-            fill: '#fff',
-            name: 'image',
-        });
-        scale = Math.min(
-            (screenWidth - 2 * margin) / rectWidth,
-            (screenHeight - 2 * margin) / rectHeight
-        );
-        // rect.scale({
-        //     x: scale,
-        //     y: scale
-        // });
-        // rect.position({
-        // x: (screenWidth - rect.getClientRect().width) / 2,
-        //     y: 20,
-        // });
-        const line1 = new Konva.Line({
-            points: [0, 640, 1080, 640],
-            stroke: 'red',
-            strokeWidth: 1,
-        });
-        const line2 = new Konva.Line({
-            points: [0, 640 * 2, 1080, 640 * 2],
-            stroke: 'red',
-            strokeWidth: 1,
-        });
-        const group = new Konva.Group({
-            draggable: false,
-        });
-        group.add(rect, line1, line2);
-        group.scale({
-            x: scale,
-            y: scale
-        });
-        group.position({
-            x: (screenWidth - rect.getClientRect().width) / 2,
-            y: 20,
-        });
-        layer.add(group);
+        let layer = null;
+        let group = null;
+        let rect = null;
+        let line1 = null;
+        let line2 = null;
+        function criarModelo8() {
+            rect = new Konva.Rect({
+                width: 1080,
+                height: 1920,
+                fill: '#fff',
+                name: 'image',
+            });
+            line1 = new Konva.Line({
+                points: [0, 640, 1080, 640],
+                stroke: 'red',
+                strokeWidth: 1,
+            });
+            line2 = new Konva.Line({
+                points: [0, 640 * 2, 1080, 640 * 2],
+                stroke: 'red',
+                strokeWidth: 1,
+            });
+            group.add(rect, line1, line2);
+        }
+        function calcularEscala(width, height, larguraDaTela, alturaDaTela) {
+            // Calcular as escalas horizontal e vertical
+            const escalaHorizontal = larguraDaTela / width;
+            const escalaVertical = alturaDaTela / height;
+
+            // Escolher a escala mínima para garantir que o quadrado caiba completamente na tela
+            const escala = Math.min(escalaHorizontal, escalaVertical);
+
+            return escala;
+        }
+        function setItem(criarModeloCallback = () => { }) {
+            if (layer) {
+                layer.destroy();
+            }
+            layer = new Konva.Layer();
+            scale = Math.min(
+                (screenWidth - 2 * margin) / rectWidth,
+                (screenHeight - 2 * margin) / rectHeight
+            );
+            group = new Konva.Group({
+                draggable: false,
+            });
+            criarModeloCallback();
+            group.scale({
+                x: scale,
+                y: scale
+            });
+            group.position({
+                x: (screenWidth - rect.getClientRect().width) / 2,
+                y: 20,
+            });
+            layer.add(group);
+            stage.add(layer);
+        }
+        setItem(criarModelo8);
         // layer.add(line1);
         // layer.add(line2);
-        stage.add(layer);
         const scaleBy = 1.5;
         stage.on('wheel', (e) => {
             e.evt.preventDefault();
@@ -630,6 +648,7 @@
             );
             img.setAttrs(crop);
         }
+        let ds_modelo = 'modelo8';
         container.addEventListener('drop', function (event) {
             Konva.Image.fromURL(
                 event.dataTransfer.getData('url'),
@@ -664,6 +683,10 @@
                         img.opacity(1);
                     });
                     group.add(img);
+                    if (ds_modelo === 'modelo1') {
+                        line1.moveToTop();
+                        line2.moveToTop();
+                    }
                 }
             );
             event.preventDefault();
@@ -910,9 +933,23 @@
         }
         async function download() {
             const group2 = group.clone();
+            group2.scale({
+                x: 1,
+                y: 1
+            })
+            rect.scale({
+                x: 1,
+                y: 1
+            })
+            group.width(1080);
+            group.height(1080);
             const ImageBase64 = await group2.toDataURL({
                 mimeType: 'image/jpeg',
                 quality: 1,
+                width: rectWidth,
+                height: rectHeight,
+                x: rect.getClientRect().x,
+                y: rect.getClientRect().y,
             });
             const link = document.createElement("a"); //Create <a>
             link.href = ImageBase64; //Image Base64 Goes here
@@ -1099,6 +1136,37 @@
             arrTextos.push(textNode);
             textNode.on('click tap', clickTap);
             group.add(textNode)
+        }
+        function criarModelo1() {
+            rect = new Konva.Rect({
+                width: 1080,
+                height: 1080,
+                fill: '#b3b3b3',
+                name: 'image',
+            });
+            line1 = new Konva.Line({
+                points: [0, 720, 1080, 720],
+                stroke: '#fff',
+                strokeWidth: 10,
+            });
+            line2 = new Konva.Line({
+                points: [1080 / 2, 720, 1080 / 2, 1080],
+                stroke: '#fff',
+                strokeWidth: 10,
+            });
+            group.add(rect, line1, line2);
+        }
+        function alterarModelo(ds_modelo_param) {
+            let criarModeloCallback = () => { };
+            if (ds_modelo_param === 'modelo8') {
+                criarModeloCallback = criarModelo8;
+            }
+            if (ds_modelo_param === 'modelo1') {
+                rectHeight = 1080;
+                criarModeloCallback = criarModelo1;
+            }
+            ds_modelo = ds_modelo_param;
+            setItem(criarModeloCallback);
         }
     </script>
 </body>
