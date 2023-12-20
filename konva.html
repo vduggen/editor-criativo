@@ -503,7 +503,7 @@
                 y: scale
             });
             group.position({
-                x: (screenWidth - rect.getClientRect().width) / 2,
+                x: (screenWidth - rect.getClientRect().width) / 2 + 422 / 2,
                 y: 20,
             });
             layer.add(group);
@@ -654,7 +654,6 @@
                 event.dataTransfer.getData('url'),
                 (img) => {
                     img.setAttrs({
-                        x: (screenWidth - rect.getClientRect().width) / 2,
                         name: 'image',
                         draggable: true,
                     });
